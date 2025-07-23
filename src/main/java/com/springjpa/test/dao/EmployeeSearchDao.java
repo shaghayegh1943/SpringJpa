@@ -10,7 +10,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -35,6 +35,32 @@ public class EmployeeSearchDao {
         TypedQuery<Employee> typedQuery = em.createQuery(query);
 
         return typedQuery.getResultList();
+    }
+
+    public List<Employee> findAllByCriteria(SearchRequest request)
+    {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Employee> query = criteriaBuilder.createQuery(Employee.class);
+        List<Predicate> predicates = new ArrayList<>();
+        //select from amployee
+        Root<Employee> root = query.from(Employee.class);
+        if(request.getFirstName() != null){
+            Predicate predicateFirstName = criteriaBuilder.like(root.get("firstName"), "%" + request.getFirstName() + "%");
+            predicates.add(predicateFirstName);
+        }
+        if(request.getLastName() != null){
+            Predicate predicateLastName = criteriaBuilder.like(root.get("lastName"), "%" + request.getLastName() + "%");
+            predicates.add(predicateLastName);
+        }
+        if(request.getEmail() != null){
+            Predicate predicateEmail = criteriaBuilder.like(root.get("email"), "%" + request.getEmail() + "%");
+            predicates.add(predicateEmail);
+        }
+        //it will return a table of predicates
+        query.where(criteriaBuilder.or(predicates.toArray(new Predicate[0])));
+        TypedQuery<Employee> typedQuery = em.createQuery(query);
+        return typedQuery.getResultList();
+
     }
 
 
